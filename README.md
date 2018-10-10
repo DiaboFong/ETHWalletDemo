@@ -29,7 +29,7 @@
 
 [MyEtherWallet](https://www.myetherwallet.com/) 是一个轻钱包，无需下载，所有操作在直接在网页上就可以完成
 
-![](https://brucefeng-1251273438.cos.ap-shanghai.myqcloud.com/1.png?q-sign-algorithm=sha1&q-ak=AKIDIO1LjJpm4YOO67v4ywNELsUInPYdv6q2&q-sign-time=1539152298;1539154098&q-key-time=1539152298;1539154098&q-header-list=&q-url-param-list=&q-signature=d8edb7c6b0e0fbda6dca30c58fb2ccca089f847d&x-cos-security-token=9a3c3a462ed8b4d7a0f66e9b1f24885532034bf810001&response-content-disposition=attachment)
+![](https://brucefeng-1251273438.cos.ap-shanghai.myqcloud.com/1.png?q-sign-algorithm=sha1&q-ak=AKIDeEUrXi5Nck40rHuNfwbPhZY5V9v2WPtb&q-sign-time=1539176823;1539178623&q-key-time=1539176823;1539178623&q-header-list=&q-url-param-list=&q-signature=9219ba10e67a87be5ddf6a60e8f3ced47d62ad7f&x-cos-security-token=5f78d92d11f0e1bc32d935c6d22b51327700fa7110001&response-content-disposition=attachment)
 
 **主要功能如下**
 
