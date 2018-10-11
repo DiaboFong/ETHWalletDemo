@@ -527,7 +527,6 @@ $ npm i web3 koa koa-body koa-static koa-views koa-router ejs
 
 ![](https://brucefeng-1251273438.cos.ap-shanghai.myqcloud.com/2.png?q-sign-algorithm=sha1&q-ak=AKIDJ1ixLXTqSNZ1b0ezoAQFi5oXenNQ2OnR&q-sign-time=1539233483;1539235283&q-key-time=1539233483;1539235283&q-header-list=&q-url-param-list=&q-signature=83c38760dcaaf39a200796fc9b040ed6020924e8&x-cos-security-token=46d0506501de3c9a624e970cbabd8a50abe9cc4010001&response-content-disposition=attachment)
 
-![](https://brucefeng-1251273438.cos.ap-shanghai.myqcloud.com/2.png?q-sign-algorithm=sha1&q-ak=AKIDJ1ixLXTqSNZ1b0ezoAQFi5oXenNQ2OnR&q-sign-time=1539233483;1539235283&q-key-time=1539233483;1539235283&q-header-list=&q-url-param-list=&q-signature=83c38760dcaaf39a200796fc9b040ed6020924e8&x-cos-security-token=46d0506501de3c9a624e970cbabd8a50abe9cc4010001&response-content-disposition=attachment)
 
 ### 2.创建路由文件
 
