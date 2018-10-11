@@ -1,6 +1,6 @@
 
 
-# 					  以太坊中心化钱包开发手册
+# 					  以太坊网页钱包开发手册
 
 |  修订日期  |   姓名    |          邮箱           |
 | :--------: | :-------: | :---------------------: |
@@ -20,8 +20,6 @@
 * Token转账实现
 
 目前主流的钱包平台已经有太多了，而且有很多已经做得比较完善了，所以我们本文的开发工作只是为了学习以太坊开发技术，并非去设计一个新的钱包软件，重复造轮子几乎没有任何价值。
-
-
 
 
 
@@ -76,6 +74,10 @@ web3.js是一个库集合，允许使用HTTP或者RPC连接与本地或者远程
 * 生成钱包配置
 
 `web3.eth.accounts.encrypt(privateKey, password);`
+
+* 通过私钥生成账户对象
+
+`web3.eth.accounts.privateKeyToAccount(privateKey);`
 
 
 
@@ -811,7 +813,7 @@ module.exports = {
 
 > 由于涉及到了onclick，所以，我们现在需要创建js代码实现相关方法
 
-(4) 实现`saveKeystoreNext`方法
+> 实现`saveKeystoreNext`方法
 
 * 导入jquery文件
 
@@ -841,6 +843,8 @@ function saveKeystoreNext(){
 > 此处的导航页前端用的是蓝鲸智云的MagicBox组件，作为蓝鲸智云的忠实粉丝，推荐大家使用
 >
 > http://magicbox.bk.tencent.com/
+
+#### (1) 创建导航页
 
 `static/html/nav.html`
 
@@ -879,7 +883,9 @@ function saveKeystoreNext(){
 </div>
 ```
 
-> 将nav.html集成到所有相关网页中即可,如`newaccount.html`
+#### (2) 集成导航页
+
+将nav.html集成到所有相关网页中即可,如`newaccount.html`
 
 ```js
 <html>
@@ -913,15 +919,244 @@ function saveKeystoreNext(){
 
 
 
-
-
 ## 五.解锁钱包账户
 
-### 1. 通过私钥解锁账户
+在通过钱包转账之前，我们都需要先对钱包账户进行解锁后才能进行正常交易，目前主要的解锁方式为
+
+* 私钥解锁
+* 配置文件+密码解锁
+* 助记词解锁
+
+本文我们主要讲解如何开发通过私钥解锁跟配置文件解锁来进行账户解锁。
+
+我们模仿MyEtherWallet的方式，将解锁钱包的功能放在转账交易模块下面，便于整合。
+
+### 1. 搭建代码框架
+
+#### (1) 创建控制器
+
+`controllers/transaction.js`
+
+```js
+module.exports = {
+    transactionHtml: async (ctx) =>{
+        await ctx.render("transaction.html")
+    },
+}
+```
 
 
 
-### 2. 通过配置文件解锁账户
+#### (2) 创建前端页面
+
+`views/transaction.html`
+
+```html
+<html>
+
+<head>
+    <title>转账</title>
+    <script src="js/lib/jquery-3.3.1.min.js"></script>
+    <script src="js/lib/jquery.url.js"></script>
+    <script src="js/wallet.js"></script>
+</head>
+
+<body>
+    <div id="nav">
+        <script>
+            $("#nav").load("html/nav.html")
+        </script>
+    </div>
+    <div id="main">
+        <h3>发送以太币/Token</h3>
+        <input type="radio" id="unlockAccountType0" name="unlockAccountType" value="0">
+        <label for="unlockAccountType0">Keystore File</label>
+        <br>
+        <input type="radio" id="unlockAccountType1" name="unlockAccountType" vaule="1">
+        <label for="unlockAccountType1">Private Key</label>
+        <!-- unlockAccount0 表示通过Keystore解锁账户 unlockAccount1 表示通过私钥解锁账户-->
+        <div id="unlockAccount0" style="display:none">
+        
+        </div>
+
+        <div id="unlockAccount1" style="display:none">
+        
+        </div>
+
+    </div>
+</body>
+
+</html>
+```
+
+
+
+#### (3)  配置路由
+
+`router/router.js`
+
+```js
+var router = require("koa-router")();
+var newAccount = require("../controllers/newAccount");
+var transactionController = require("../controllers/transaction");
+
+router.get("/",newAccount.homeHtml);
+//创建账号的页面
+router.get("/newaccount.html",newAccount.newAccountHtml);
+//提交创建账号表单
+router.post("/newaccount",newAccount.newAccount);
+
+//获取转账页面
+router.get("/transaction.html",transactionController.transactionHtml);
+
+module.exports = router
+
+```
+
+
+
+### 2. 通过私钥解锁账户
+
+#### (1) 修改前端页面
+
+`views/transaction.html`
+
+```html
+<html>
+
+<head>
+    <title>转账</title>
+    <script src="js/lib/jquery-3.3.1.min.js"></script>
+    <script src="js/lib/jquery.url.js"></script>
+    <script src="js/wallet.js"></script>
+    <link rel="stylesheet" href="css/wallet.css">
+</head>
+
+<body>
+    <div id="nav">
+        <script>
+            $("#nav").load("html/nav.html")
+        </script>
+    </div>
+    <div id="main">
+        <h3>发送以太币/Token</h3>
+        <input type="radio" id="unlockAccountType0" name="unlockAccountType" value="0">
+        <label for="unlockAccountType0">Keystore File</label>
+        <br>
+        <input type="radio" id="unlockAccountType1" name="unlockAccountType" vaule="1">
+        <label for="unlockAccountType1">Private Key</label>
+        <!-- unlockAccount0 表示通过Keystore解锁账户 unlockAccount1 表示通过私钥解锁账户-->
+        <div id="unlockAccount0" style="display:none">
+
+        
+        </div>
+
+        <div id="unlockAccount1" style="display:none">
+            <h3>请输入钱包私钥[请认准官网，防止钓鱼]</h3>
+            <textarea id="inputAccountType1" cols="" rows="3"></textarea>
+            <button onclick="unlockAccountWithPK()">解锁</button>
+        
+        </div>
+
+    </div>
+</body>
+
+</html>
+```
+
+> 修改`js/wallet.js`代码
+
+```js
+function saveKeystoreNext(){
+    //隐藏保存keystore页面
+    $("#save-keystore").hide()
+    //显示保存private页面
+    $("#save-privatekey").show()
+}
+
+function unlockAccountWithPK(){
+    var privateKey = $("#inputAccountType1").val()
+    console.log(privateKey)
+    //将私钥传至服务端
+    $post("/unlockWithPK",`privatekey=${privateKey}`,function(res,status){
+        console.log(status + JSON.stringify(res))
+    })
+}
+
+// 对元素的操作需要等文档加载完毕后才能调用成功
+$(document).ready(function (){
+    $("input[name=unlockAccountType]").change(function(){
+        if (this.value == 0) {
+            //如果点击keystore，则显示keystore操作
+            $("#unlockAccount0").show()
+            $("#unlockAccount1").hide()
+        }else {
+            $("#unlockAccount0").hide()
+            $("#unlockAccount1").show()
+
+        }
+       
+
+    })
+})
+
+```
+
+
+
+#### (2) 创建控制器
+
+`controllers/account.js`
+
+```js
+var web3 = require("../utils/myUtils").getWeb3()
+
+module.exports = {
+    unlockWithPK: (ctx) => {
+        var privateKey = ctx.request.body.privatekey
+        console.log(privateKey)
+        var account = web3.eth.accounts.privateKeyToAccount(privateKey);
+        console.log(account.address);
+        ctx.response.body = "解锁成功";
+    }
+}
+```
+
+
+
+#### (3) 修改路由
+
+`router/router.js`
+
+```js
+var router = require("koa-router")();
+var newAccount = require("../controllers/newAccount");
+var transactionController = require("../controllers/transaction");
+var accountController = require("../controllers/account")
+
+router.get("/",newAccount.homeHtml);
+//创建账号的页面
+router.get("/newaccount.html",newAccount.newAccountHtml);
+//提交创建账号表单
+router.post("/newaccount",newAccount.newAccount);
+
+//获取转账页面
+router.get("/transaction.html",transactionController.transactionHtml);
+router.post("/unlockWithPK",accountController.unlockWithPK);
+
+module.exports = router
+
+```
+
+#### (4) 阶段性测试
+
+
+
+
+
+
+
+### 3. 通过配置文件解锁账户
 
 
 
