@@ -31,6 +31,12 @@
 
 ![](https://brucefeng-1251273438.cos.ap-shanghai.myqcloud.com/1.png?q-sign-algorithm=sha1&q-ak=AKIDeEUrXi5Nck40rHuNfwbPhZY5V9v2WPtb&q-sign-time=1539176823;1539178623&q-key-time=1539176823;1539178623&q-header-list=&q-url-param-list=&q-signature=9219ba10e67a87be5ddf6a60e8f3ced47d62ad7f&x-cos-security-token=5f78d92d11f0e1bc32d935c6d22b51327700fa7110001&response-content-disposition=attachment)
 
+
+
+
+
+
+
 **主要功能如下**
 
 * Net Wallet : 新建钱包
@@ -206,7 +212,7 @@ console.log("服务启动完毕");
 1.2
 ```
 
-(5) 异步中间件
+#### (5) 异步中间件
 
 由async标记的函数被称为异步函数，在异步函数中，可以通过await调用另外一个异步函数，使用await时，其所在的方法必须使用关键字async
 
@@ -227,7 +233,7 @@ console.log("服务启动完毕");
 
 
 
-(6) 原生路由
+#### (6) 原生路由
 
 ```js
 var Koa = require("koa");
@@ -258,6 +264,254 @@ app.use((ctx,next) =>{
 app.listen(3003);
 console.log("服务启动完毕");
 ```
+
+
+
+#### (7) koa-router路由
+
+由于原生路由使用比较繁琐，所以可以通过封装好的koa-router模块，使用router.routers()绑定到中间件
+
+**安装koa-router**
+
+```
+$ npm install koa-router
+```
+
+```js
+var Koa = require("koa");
+var app = new Koa();
+//导入koa-router,注意要加上()才能生效
+var router = require("koa-router")()
+router.get("/hello",function(ctx,next){
+    ctx.response.body = "hello,brucefeng";
+});
+
+router.get("/bye",function (ctx,next){
+    ctx.response.body = "good bye brucefeng";
+});
+
+//将router路由注册到中间件
+app.use(router.routes());
+
+app.listen(3003);
+console.log("服务启动完毕");
+```
+
+#### (8) 请求重定向
+
+一般在如下情况下需要使用到重定向
+
+* 后台系统升级，对之前的页面不在支持，此时需要使用重定向到新的API上满足用户的访问准确性
+* 完成某个操作后自动跳转至其他页面，如注册成功，登录成功等等
+
+```js
+var Koa = require("koa");
+var app = new Koa();
+//导入koa-router,注意要加上()才能生效
+var router = require("koa-router")()
+router.get("/hello",function(ctx,next){
+    ctx.response.body = "hello,brucefeng";
+});
+
+router.get("/hi",function (ctx,next){
+   ctx.response.redirect("/hello")
+});
+
+//将router路由注册到中间件
+app.use(router.routes());
+
+app.listen(3003);
+console.log("服务启动完毕");
+```
+
+> 通过 ctx.response.redirect("/hello")将"/hi"请求重定向到/hello对应的页面
+>
+> 在node.js中访问的url中有中文时，需要通过全局encodeURIComponent(string)进行编码
+
+#### (9) 获取get请求参数
+
+客户端在请求获取服务的数据时，获取的URL中通常会携带各种参数，服务端如何获取到get请求的参数呢？
+
+* 格式1：`http://127.0.0.1:3003/hello/brucefeng`
+
+获取方式: `ctx.params.name`
+
+* 格式2：`http://127.0.0.1:3003/bye?name=brucefeng`
+
+获取方式: `ctx.query.name`
+
+> 调用params获取参数的时候，params不是request的属性，需要通过ctx直接调用获取。
+
+#### (10) 获取post请求参数
+
+Get请求的参数附带在了url上，Post请求的参数在请求体body里面，所以要获取body的数据，需要使用到插件`koa-body`,通过`ctx.request.body.name`获取参数.
+
+```
+$ npm install koa-router
+```
+
+```
+var Koa = require("koa");
+var app = new Koa();
+
+//导入koa-router,注意要加上()才能生效
+var router = require("koa-router")()
+//引入koa-body
+var koaBody = require("koa-body")
+
+
+router.post("/hello",function(ctx,next){
+    var body = ctx.request.body;
+    ctx.response.body = "hello,bruce";
+    console.log(body);
+    console.log(body.username);
+});
+
+//设置multipart : true,支持多个参数
+app.use(koaBody({
+    multipart:true
+}))
+
+//将router路由注册到中间件
+app.use(router.routes());
+
+app.listen(3003);
+console.log("服务启动完毕");
+```
+
+> //通过命令使用curl插件模拟调用一个Post请求
+> //curl -H "Content-Type:application/json" -X POST --data '{"username":"brucefeng"}' http://localhost:3003/hello
+
+```
+brucefengdeMBP:ETHWalletDemo brucefeng$ node index.js
+服务启动完毕
+{ username: 'brucefeng' }
+brucefeng
+```
+
+#### (11) 加载静态资源
+
+加载静态资源，如图片，字体，样式表，脚本等，编码指定静态资源的路径是相对于./static的路径。
+
+```
+$ npm install koa-static
+```
+
+```
+var Koa = require("koa");
+var app = new Koa();
+
+//导入koa-router,注意要加上()才能生效
+var router = require("koa-router")();
+var static = require("koa-static");
+var path = require("path")
+
+router.get("/hello",function (ctx,next){
+    ctx.response.body = "<html> <a href='/0.png'>看我</html>"
+})
+//静态资源的路径是相对于./static的路径
+app.use(static(path.join(__dirname,"./static")))
+
+//将router路由注册到中间件
+app.use(router.routes());
+
+app.listen(3003);
+console.log("服务启动完毕");
+```
+
+> 启动服务，通过浏览器访问测试
+
+#### (12) 模板引擎
+
+模板引擎ejs需要配上模板渲染中间件koa-views使用，如果需要支持其他后缀的文件，需要将文件扩展名映射到引擎中。
+
+```shell
+$ npm install ejs koa-views
+```
+
+`index.js`
+
+```js
+var Koa = require("koa");
+var app = new Koa();
+
+//导入koa-router,注意要加上()才能生效
+var router = require("koa-router")();
+var static = require("koa-static");
+var path = require("path")
+var views = require("koa-views")
+
+router.get("/hello",async (ctx,next) =>{
+    //将json里面的值替换为文件里面的变量
+    var name = "brucefeng";
+    await ctx.render("test.ejs",{
+        name,
+        "sex":"帅哥"
+    }) 
+})
+
+router.get("/bye",async (ctx,next)=>{
+    await ctx.render("home.html",{
+        "name": "fengyingcong"
+    })
+})
+
+app.use(views(
+    //默认是views下面获取ejs后缀的文件，如果是其他类型的文件需要指定文件类型
+    path.join(__dirname,"./static/views"),
+    {extension:"ejs", map:{html: "ejs"}}
+))
+
+
+//静态资源的路径是相对于./static的路径
+app.use(static(path.join(__dirname,"./static")))
+
+//将router路由注册到中间件
+app.use(router.routes());
+
+app.listen(3003);
+console.log("服务启动完毕");
+```
+
+`static/views/test.ejs `
+
+```js
+<!DOCTYPE <!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+    <script src="main.js"></script>
+</head>
+<body>
+    <div>姓名: <%= name %> 性别: <%= sex %></div>
+</body>
+</html>
+```
+
+`static/views/home.html `
+
+```js
+<!DOCTYPE <!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+    <script src="main.js"></script>
+</head>
+<body>
+    <div>姓名: <%= name %> </div>
+</body>
+</html>
+```
+
+
 
 
 
