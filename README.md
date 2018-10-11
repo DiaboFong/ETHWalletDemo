@@ -517,7 +517,98 @@ console.log("服务启动完毕");
 
 ## 三.初始化项目环境
 
+### 1.导入项目依赖
 
+```
+$ mkdir ETHWalletDemo ;cd ETHWalletDemo
+$ npm init -y 
+$ npm i web3 koa koa-body koa-static koa-views koa-router ejs
+```
+
+![](https://brucefeng-1251273438.cos.ap-shanghai.myqcloud.com/2.png?q-sign-algorithm=sha1&q-ak=AKIDJ1ixLXTqSNZ1b0ezoAQFi5oXenNQ2OnR&q-sign-time=1539233483;1539235283&q-key-time=1539233483;1539235283&q-header-list=&q-url-param-list=&q-signature=83c38760dcaaf39a200796fc9b040ed6020924e8&x-cos-security-token=46d0506501de3c9a624e970cbabd8a50abe9cc4010001&response-content-disposition=attachment)
+
+### 2.创建路由文件
+
+```
+$ mkdir  router ; cd router
+$ vim router.js
+```
+
+```
+var router = require("koa-router")()
+//定义路由newaccount
+router.get("/newaccount",(ctx,next)=>{
+    ctx.response.body = "创建钱包"
+})
+
+module.exports = router
+```
+
+
+
+### 3.创建入口文件
+
+`ETHWalletDemo/index.js`
+
+```js
+//导入./router/router包
+var router = require("./router/router.js")
+//引入Koa库
+var Koa = require("koa")
+//通过koa创建一个应用程序
+var app = new Koa()
+
+app.use(router.routes())
+app.listen(3003)
+console.log("钱包启动成功，请访问http://127.0.0.1:3003/newaccount进行测试")
+```
+
+
+
+### 4.创建MVC框架
+
+`ETHWalletDemo`下创建
+
+```
+$ mkdir models views controllers   #创建MVC框架目录
+$ mkdir utils #创建帮助文件目录
+$ mkdir -p static/{css,js,html}  #创建静态文件目录
+```
+
+### 5.完善项目框架
+
+`ETHWalletDemo/index.js`
+
+```js
+//引入Koa库
+var Koa = require("koa")
+//通过koa创建一个应用程序
+var app = new Koa()
+
+//导入./router/router包
+var router = require("./router/router.js")
+var static = require("koa-static")
+var path = require("path")
+var views = require("koa-views")
+var koaBody = require("koa-body")
+
+//拦截获取网络请求,自定义的function需要使用next()
+app.use(async (ctx,next)=>{
+    console.log(`${ctx.url} ${ctx.method}...`)
+    await next();
+})
+
+//注册中间件
+//注册静态文件的库到中间件
+app.use(static(path.join(__dirname,"static")))
+//注册模板引擎的库到中间件
+app.use(views(path.join(__dirname,"views"),{extension:"ejs", map:{html: "ejs"}}))
+//针对于文件上传时，可以解析多个字段
+app.use(koaBody({multipart:true})) 
+app.use(router.routes())
+app.listen(3003)
+console.log("钱包启动成功，请访问http://127.0.0.1:3003/...进行测试")
+```
 
 
 

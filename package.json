@@ -1,0 +1,29 @@
+{
+  "name": "ETHWalletDemo",
+  "version": "1.0.0",
+  "description": "|  修订日期  |   姓名    |          邮箱           | | :--------: | :-------: | :---------------------: | | 2018-10-10 | brucefeng | brucefeng@brucefeng.com |",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DiaboFong/ETHWalletDemo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DiaboFong/ETHWalletDemo/issues"
+  },
+  "homepage": "https://github.com/DiaboFong/ETHWalletDemo#readme",
+  "dependencies": {
+    "ejs": "^2.6.1",
+    "koa": "^2.5.3",
+    "koa-body": "^4.0.4",
+    "koa-router": "^7.4.0",
+    "koa-static": "^5.0.0",
+    "koa-views": "^6.1.4",
+    "web3": "^1.0.0-beta.36"
+  }
+}
