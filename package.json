@@ -1,7 +1,7 @@
 {
   "name": "ETHWalletDemo",
   "version": "1.0.0",
-  "description": "|  修订日期  |   姓名    |          邮箱           | | :--------: | :-------: | :---------------------: | | 2018-10-10 | brucefeng | brucefeng@brucefeng.com |",
+  "description": "ETHWalletDemo",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

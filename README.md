@@ -1,6 +1,6 @@
 
 
-# 			ETHWalletDemo开发学习手册
+# 					  以太坊中心化钱包开发手册
 
 |  修订日期  |   姓名    |          邮箱           |
 | :--------: | :-------: | :---------------------: |
@@ -29,11 +29,9 @@
 
 [MyEtherWallet](https://www.myetherwallet.com/) 是一个轻钱包，无需下载，所有操作在直接在网页上就可以完成
 
-![](https://brucefeng-1251273438.cos.ap-shanghai.myqcloud.com/1.png?q-sign-algorithm=sha1&q-ak=AKIDeEUrXi5Nck40rHuNfwbPhZY5V9v2WPtb&q-sign-time=1539176823;1539178623&q-key-time=1539176823;1539178623&q-header-list=&q-url-param-list=&q-signature=9219ba10e67a87be5ddf6a60e8f3ced47d62ad7f&x-cos-security-token=5f78d92d11f0e1bc32d935c6d22b51327700fa7110001&response-content-disposition=attachment)
 
 
-
-
+![](https://brucefeng-1251273438.cos.ap-shanghai.myqcloud.com/1.png)
 
 
 
@@ -50,7 +48,7 @@
 
 
 
-## 二.node.JS与web.js
+## 二.node.js与web.js
 
 ### 1.Node.js
 
@@ -64,6 +62,22 @@ web3.js是一个库集合，允许使用HTTP或者RPC连接与本地或者远程
 * web3-ssh:   用于进行通信的p2p和广播
 * web-bzz:     用于群协议，分散的文件存储
 * web3-utils: 主要用于Dapp开发的辅助函数
+
+> 官方文档: https://web3js.readthedocs.io/en/1.0/
+
+(1) 账户相关
+
+[web3.eth.accounts](https://web3js.readthedocs.io/en/1.0/web3-eth-accounts.html)
+
+* 创建钱包账户
+
+`web3.eth.accounts.create();`
+
+* 生成钱包配置
+
+`web3.eth.accounts.encrypt(privateKey, password);`
+
+
 
 ### 3. Koa中间件
 
@@ -525,7 +539,7 @@ $ npm init -y
 $ npm i web3 koa koa-body koa-static koa-views koa-router ejs
 ```
 
-![](https://brucefeng-1251273438.cos.ap-shanghai.myqcloud.com/2.png?q-sign-algorithm=sha1&q-ak=AKIDJ1ixLXTqSNZ1b0ezoAQFi5oXenNQ2OnR&q-sign-time=1539233483;1539235283&q-key-time=1539233483;1539235283&q-header-list=&q-url-param-list=&q-signature=83c38760dcaaf39a200796fc9b040ed6020924e8&x-cos-security-token=46d0506501de3c9a624e970cbabd8a50abe9cc4010001&response-content-disposition=attachment)
+![](https://brucefeng-1251273438.cos.ap-shanghai.myqcloud.com/2.png)
 
 
 ### 2.创建路由文件
@@ -619,13 +633,285 @@ console.log("钱包启动成功，请访问http://127.0.0.1:3003/...进行测试
 
 ### 1.创建钱包账户
 
+#### (1) 封装web3库调用
+
+`utils/myUtils.js`
+
+```js
+var web3 = require("../utils/myUtils").getWeb3()
+module.exports = {
+    getWeb3: ()=>{
+        var Web3 = require("web3");
+        var web3 = new Web3(Web3.givenProvider || 'http://127.0.0.1:8545');
+        return web3;
+    }
+}
+```
+
+
+
+#### (2) 创建控制器
+
+`controllers/newAccount.js`
+
+```js
+var web3 = require("../utils/myUtils").getWeb3()
+
+module.exports = {
+    //获取创建账号的页面
+    newAccountHtml: async (ctx) =>{
+        await ctx.render("newaccount.html")
+    },
+    //表单提交被触发的方法
+    newAccount: (ctx) =>{
+        console.log("newAccount");
+        var password = ctx.request.body.password;
+        //通过密码创建钱包账户
+        var account = web3.eth.accounts.create(password);
+        console.log(account.address);
+        ctx.response.body = "钱包账户: "+account.address +" 创建成功";
+    }
+}
+```
+
+#### (3) 创建前端页面
+
+`views/newaccount.html`
+
+```js
+<html>
+<head>
+    <title>创建钱包</title>
+</head>
+<body>
+    <div id="main">
+        <h1>创建一个新的钱包</h1>
+        <form method="POST" action="/newaccount">
+            <input type="text" placeholder="请输入密码" name="password">
+            <button type="submit">创建钱包</button>
+        </form>
+    </div>
+</body>
+</html>
+
+```
+
+
+
+#### (4) 配置路由
+
+`router/router.js`
+
+```js
+var router = require("koa-router")()
+var newAccount = require("../controllers/newAccount")
+//创建账号的页面
+router.get("/newaccount",newAccount.newAccountHtml)
+//提交创建账号表单
+router.post("/newaccount",newAccount.newAccount)
+
+module.exports = router
+```
+
+
+
 
 
 ### 2.下载配置文件
 
+#### (1) 创建目录保存配置文件
+
+```
+$ mkdir static/keystore
+```
+
+#### (2) 实现配置文件的保存
+
+`controllers/newAccount.js`
+
+```js
+var web3 = require("../utils/myUtils").getWeb3()
+var fs = require("fs")
+var path = require("path")
+module.exports = {
+    //获取创建账号的页面
+    newAccountHtml: async (ctx) =>{
+        await ctx.render("newaccount.html")
+    },
+    //表单提交被触发的方法
+    newAccount: async (ctx) =>{
+        console.log("newAccount");
+        var password = ctx.request.body.password;
+        //通过密码创建钱包账户
+        var account = web3.eth.accounts.create(password);
+        console.log(account.address);
+        //根据账号私钥跟密码生成keystore文件
+        var keystore = web3.eth.accounts.encrypt(account.privateKey, password);
+        //keystore文件保存到文件中,
+       
+        var keystoreString = JSON.stringify(keystore);
+         //格式如下:UTC--Date--Adress
+         //UTC--2018-09-26T05-07-57.260Z--937d091780693ab7f51331bb52797a9267bb9ed2
+        var fileTime = new Date().toDateString()
+        var fileName = 'UTC--' + fileTime + '--' + account.address.slice(2) ;
+        var filePath = path.join(__dirname,"../static/keystore",fileName)
+        fs.writeFileSync(filePath,keystoreString)
+        await ctx.render("downloadkeystore.html",{
+            "downloadurl":path.join("keystore",fileName),
+            "privatekey":account.privateKey
+        })
+    }
+}
+```
+
+> 此时生成的Keystore文件将会被保存至static/keystore目录中
+
+#### (3) 创建前端页面
+
+`view/downloadkeystore.html`
+
+```js
+<html>
+
+<head>
+    <title>保存KeyStore文件</title>
+    <script src="js/lib/jquery-3.3.1.min.js"></script>
+    <script src="js/lib/jquery.url.js"></script>
+    <script src="js/wallet.js"></script>
+</head>
+
+<body>
+    <div id="nav">
+        <script>
+            $("#nav").load("html/nav.html")
+        </script>
+    </div>
+
+    <div id="main">
+
+        <div id="save-keystore">
+            <h1>保存KeyStore文件</h1>
+            <a href="<%= downloadurl %>">保存KeyStore文件</a>
+            <br>
+            <button onclick="saveKeystoreNext()">Next Step</button>
+        </div>
+        <div id="save-privatekey" style="display:none">
+            <h1>保存钱包私钥</h1>
+            <div>
+                <%= privatekey %>
+                <span>请务必妥善保管!</span>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
+```
+
+> 由于涉及到了onclick，所以，我们现在需要创建js代码实现相关方法
+
+(4) 实现`saveKeystoreNext`方法
+
+* 导入jquery文件
+
+```
+$ mkdir js/lib
+```
+
+将`jquery.url.js`与`jquery-3.3.1.min.js`拷贝进lib目录中
+
+* 实现方法
+
+`static/js/wallet.js`
+
+```js
+function saveKeystoreNext(){
+    //隐藏保存keystore页面
+    $("#save-keystore").hide()
+    //显示保存private页面
+    $("#save-privatekey").show()
+}
+```
 
 
-### 3.网页前端设计
+
+### 3.导航页设计
+
+> 此处的导航页前端用的是蓝鲸智云的MagicBox组件，作为蓝鲸智云的忠实粉丝，推荐大家使用
+>
+> http://magicbox.bk.tencent.com/
+
+`static/html/nav.html`
+
+```js
+<link href="https://magicbox.bk.tencent.com/static_api/v3/assets/bootstrap-3.3.4/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://magicbox.bk.tencent.com/static_api/v3/bk/css/bk.css" rel="stylesheet">
+
+<div class="king-horizontal-nav4">
+    <div class="logo_wrap">
+        <a class="logo" title="" href="javascript:;">
+            <img src="https://brucefeng-1251273438.cos.ap-shanghai.myqcloud.com/logo.png?q-sign-algorithm=sha1&q-ak=AKIDYFjjGyq715cLLr8ItDK35eMxJATk9icr&q-sign-time=1539248390;1539250190&q-key-time=1539248390;1539250190&q-header-list=&q-url-param-list=&q-signature=6cf940473a1fab25ae44c506fa6325d996ffd883&x-cos-security-token=4f20d4519684d02f931ecff3803970f090e08fe410001&response-content-disposition=attachment" alt="" class="logo mt10 ml20">
+        </a>
+    </div>
+    <div class="nav_wrap tmp">
+        <ul>
+            <li>
+                <a href="/home.html"><span>首页</span></a>
+            </li>
+            <li>
+                <a href="/newaccount.html"><span>创建钱包</span></a>
+            </li>
+            <li>
+                <a href="/transaction.html"><span>转账</span></a>
+            </li>
+            <li>
+                <a href="/checktransaction"><span>查询交易</span></a>
+            </li>
+            <li >
+                <a href="https://github.com/DiaboFong/ETHWalletDemo" target="_blank"><span>项目代码</span></a>
+            </li>
+            <li>
+                <a href="http://blog.51cto.com/clovemfong" target="_blank"><span>我的博客</span></a>
+            </li>
+        </ul>
+    </div>
+</div>
+```
+
+> 将nav.html集成到所有相关网页中即可,如`newaccount.html`
+
+```js
+<html>
+
+<head>
+    <title>创建钱包</title>
+    <script src="js/lib/jquery-3.3.1.min.js"></script>
+    <script src="js/lib/jquery.url.js"></script>
+    <script src="js/wallet.js"></script>
+</head>
+
+<body>
+    <div id="nav">
+        <script>
+            $("#nav").load("html/nav.html")
+        </script>
+    </div>
+    <div id="main">
+        <h1>创建一个新的钱包</h1>
+        <form method="POST" action="/newaccount">
+            <input type="text" placeholder="请输入密码" name="password">
+            <button type="submit">创建钱包</button>
+        </form>
+    </div>
+</body>
+
+</html>
+```
+
+
+
+
 
 
 
