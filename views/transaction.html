@@ -24,6 +24,13 @@
             <label for="unlockAccountType1">Private Key</label>
             <!-- unlockAccount0 表示通过Keystore解锁账户 unlockAccount1 表示通过私钥解锁账户-->
             <div id="unlockAccount0" style="display:none">
+                <h3>请选择KeyStore文件</h3>
+                <input type="file" id="inputAccountType0">
+                <span>输入密码:</span>
+                <input type="password" id="inputAccountTypePassword">
+                <br>
+                <button onclick="unlockAccountWithKS()">解锁</button>
+
 
 
             </div>
