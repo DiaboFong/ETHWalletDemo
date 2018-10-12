@@ -16,23 +16,42 @@
     </div>
     <div id="main">
         <h3>发送以太币/Token</h3>
-        <input type="radio" id="unlockAccountType0" name="unlockAccountType" value="0">
-        <label for="unlockAccountType0">Keystore File</label>
-        <br>
-        <input type="radio" id="unlockAccountType1" name="unlockAccountType" vaule="1">
-        <label for="unlockAccountType1">Private Key</label>
-        <!-- unlockAccount0 表示通过Keystore解锁账户 unlockAccount1 表示通过私钥解锁账户-->
-        <div id="unlockAccount0" style="display:none">
+        <div id="transaction0">
+            <input type="radio" id="unlockAccountType0" name="unlockAccountType" value="0">
+            <label for="unlockAccountType0">Keystore File</label>
+            <br>
+            <input type="radio" id="unlockAccountType1" name="unlockAccountType" vaule="1">
+            <label for="unlockAccountType1">Private Key</label>
+            <!-- unlockAccount0 表示通过Keystore解锁账户 unlockAccount1 表示通过私钥解锁账户-->
+            <div id="unlockAccount0" style="display:none">
 
-        
+
+            </div>
+
+            <div id="unlockAccount1" style="display:none">
+                <h3>请输入钱包私钥[请认准官网，防止钓鱼]</h3>
+                <textarea id="inputAccountType1" cols="" rows="3"></textarea>
+                <button onclick="unlockAccountWithPK()">解锁</button>
+            </div>
         </div>
 
-        <div id="unlockAccount1" style="display:none">
-            <h3>请输入钱包私钥[请认准官网，防止钓鱼]</h3>
-            <textarea id="inputAccountType1" cols="" rows="3"></textarea>
-            <button onclick="unlockAccountWithPK()">解锁</button>
-        
+        <div id="transaction1" style="display: none">
+            <div id="sendTransaction">
+
+            </div>
+
+            <div id="accountInfo"></div>
+            <div>
+                <span>账户地址:</span> <span id="accountAddress"></span>
+            </div>
+
+            <div>
+                <span>账户余额:</span> <span id="accountBalance"></span>
+            </div>
+
+
         </div>
+
 
     </div>
 </body>

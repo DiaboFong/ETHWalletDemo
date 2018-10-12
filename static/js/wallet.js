@@ -11,6 +11,16 @@ function unlockAccountWithPK(){
     //将私钥传至服务端
     $.post("/unlockWithPK",`privatekey=${privateKey}`,function(res,status){
         console.log(status + JSON.stringify(res))
+        //将服务端返回的账户信息显示到页面上
+        if (res.code == 0){
+            console.log("success yes")
+            $("#accountAddress").text(res.data.address)
+            $("#accountBalance").text(res.data.balance + " ETH")
+            // 隐藏
+            $("#transaction0").hide()
+            $("#transaction1").show()
+
+        }
     })
 }
 
