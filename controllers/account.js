@@ -23,7 +23,8 @@ module.exports = {
         console.log(balance)
         ctx.response.body = success({
             balance:balance,
-            address:account.address
+            address:account.address,
+            privatekey:account.privateKey
         })
     },
 
@@ -44,7 +45,8 @@ module.exports = {
         console.log(balance)
         ctx.response.body = success({
             balance:balance,
-            address:account.address
+            address:account.address,
+            privatekey:account.privateKey
         })
 
          

@@ -1,0 +1,26 @@
+<html>
+
+<head>
+    <title>查询交易详情</title>
+    <script src="js/lib/jquery-3.3.1.min.js"></script>
+    <script src="js/lib/jquery.url.js"></script>
+    <script src="js/wallet.js"></script>
+    <link rel="stylesheet" href="css/wallet.css">
+</head>
+
+<body>
+    <div id="nav">
+        <script>
+            $("#nav").load("html/nav.html")
+        </script>
+    </div>
+    <div id="main">
+        <h1>查询交易详情</h1>
+        <input type="text" id="txHash">
+        <button onclick="queryTransaction()">查询</button>
+        <!-- 用于显示代码块 -->
+        <pre id="transactionInfo"></pre>
+    </div>
+</body>
+
+</html>

@@ -44,6 +44,19 @@
 
         <div id="transaction1" style="display: none">
             <div id="sendTransaction">
+                <form id="sendTransactionForm">
+                    <div>
+                        <span>对方地址</span>
+                        <input type="text" name="toAddress">
+                    </div>
+                    <div>
+                        <span>发送金额</span>
+                        <input type="text" name="amount">
+                    </div>
+                    <input name="fromAddress" hidden="hidden">
+                    <input name="privateKey" hidden="hidden">
+                    <button type="submit">发送交易</button>
+                </form>
 
             </div>
 
@@ -54,6 +67,18 @@
 
             <div>
                 <span>账户余额:</span> <span id="accountBalance"></span>
+            </div>
+
+            <div id="transactionComplete" style="display:none">
+                <div>
+                        <span>交易Hash:</span>
+                        <span id="transactionCompleteHash0"></span>
+                </div>
+                <div>
+                        <span>Block Hash:</span>
+                        <span id="transactionCompleteHash1"></span>
+                </div>
+                
             </div>
 
 
